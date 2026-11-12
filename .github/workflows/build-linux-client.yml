@@ -24,8 +24,11 @@ jobs:
           git init .
           git config core.symlinks true
           # Build THIS repo at the branch the workflow was dispatched on (works on any fork).
-          git remote add origin "${{ github.server_url }}/${{ github.repository }}.git"
-          git -c http.extraheader="AUTHORIZATION: bearer ${{ github.token }}" pull origin "${{ github.ref_name }}" --depth=1
+          # Git for Windows did not accept the Bearer extraheader on a fresh
+          # fork and fell through to an impossible interactive username prompt.
+          # x-access-token is GitHub's supported noninteractive HTTPS form.
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git pull origin "${{ github.ref_name }}" --depth=1
           git submodule update --jobs=8 --init --depth=1
 
       - name: Setup Node
